@@ -4,7 +4,7 @@ public class Cube {
     private final int size;
     private final Part[][][] parts;
     public enum Side {UP, DOWN, LEFT, RIGHT, FRONT, BACK, NONE;}
-    public static final String[][] SCRAMBLE_POOL = {{"U", "U'", "D", "D'", "Uw", "Uw'", "Dw", "Dw'"}, {"L", "L'", "R", "R'", "Lw", "Lw'", "Rw", "Rw'"}, {"F", "F'", "B", "B'", "Fw", "Fw'", "Bw", "Bw'"}};
+    public static final String[][] SCRAMBLE_POOL = {{"U", "U'", "U2", "D", "D'", "D2", "Uw", "Uw'", "Uw2", "Dw", "Dw'", "Dw2"}, {"L", "L'", "L2", "R", "R'", "R2", "Lw", "Lw'", "Lw2", "Rw", "Rw'", "Rw2"}, {"F", "F'", "F2", "B", "B'", "B2", "Fw", "Fw'", "Fw2", "Bw", "Bw'", "Bw2"}};
 
     public Cube(int size) {
         if(size < 2 || size > 4)
@@ -143,10 +143,18 @@ public class Cube {
             case "D'":
                 rotateNegY(getSize() - 1);
                 break;
+            case "D2":
+                rotateY(getSize() - 1);
+                rotateY(getSize() - 1);
+                break;
             case "U":
                 rotateNegY(0);
                 break;
             case "U'":
+                rotateY(0);
+                break;
+            case "U2":
+                rotateY(0);
                 rotateY(0);
                 break;
             case "R":
@@ -155,10 +163,18 @@ public class Cube {
             case "R'":
                 rotateNegX(getSize() - 1);
                 break;
+            case "R2":
+                rotateX(getSize() - 1);
+                rotateX(getSize() - 1);
+                break;
             case "L":
                 rotateNegX(0);
                 break;
             case "L'":
+                rotateX(0);
+                break;
+            case "L2":
+                rotateX(0);
                 rotateX(0);
                 break;
             case "F":
@@ -167,10 +183,18 @@ public class Cube {
             case "F'":
                 rotateNegZ(getSize() - 1);
                 break;
+            case "F2":
+                rotateZ(getSize() - 1);
+                rotateZ(getSize() - 1);
+                break;
             case "B":
                 rotateNegZ(0);
                 break;
             case "B'":
+                rotateZ(0);
+                break;
+            case "B2":
+                rotateZ(0);
                 rotateZ(0);
                 break;
             // with inner layer:
@@ -182,11 +206,23 @@ public class Cube {
                 rotateNegY(getSize() - 1);
                 rotateNegY(getSize() - 2);
                 break;
+            case "Dw2":
+                rotateY(getSize() - 1);
+                rotateY(getSize() - 2);
+                rotateY(getSize() - 1);
+                rotateY(getSize() - 2);
+                break;
             case "Uw":
                 rotateNegY(0);
                 rotateNegY(1);
                 break;
             case "Uw'":
+                rotateY(0);
+                rotateY(1);
+                break;
+            case "Uw2":
+                rotateY(0);
+                rotateY(1);
                 rotateY(0);
                 rotateY(1);
                 break;
@@ -198,11 +234,23 @@ public class Cube {
                 rotateNegX(getSize() - 1);
                 rotateNegX(getSize() - 2);
                 break;
+            case "Rw2":
+                rotateX(getSize() - 1);
+                rotateX(getSize() - 2);
+                rotateX(getSize() - 1);
+                rotateX(getSize() - 2);
+                break;
             case "Lw":
                 rotateNegX(0);
                 rotateNegX(1);
                 break;
             case "Lw'":
+                rotateX(0);
+                rotateX(1);
+                break;
+            case "Lw2":
+                rotateX(0);
+                rotateX(1);
                 rotateX(0);
                 rotateX(1);
                 break;
@@ -214,11 +262,23 @@ public class Cube {
                 rotateNegZ(getSize() - 1);
                 rotateNegZ(getSize() - 2);
                 break;
+            case "Fw2":
+                rotateZ(getSize() - 1);
+                rotateZ(getSize() - 2);
+                rotateZ(getSize() - 1);
+                rotateZ(getSize() - 2);
+                break;
             case "Bw":
                 rotateNegZ(0);
                 rotateNegZ(1);
                 break;
             case "Bw'":
+                rotateZ(0);
+                rotateZ(1);
+                break;
+            case "Bw2":
+                rotateZ(0);
+                rotateZ(1);
                 rotateZ(0);
                 rotateZ(1);
                 break;
@@ -239,9 +299,9 @@ public class Cube {
     }
     private String getRandomScramble(int moves, boolean withInner) {
         String s = "";
-        int maxInPool = 4;
-        if(withInner)
-            maxInPool = 8;
+        int maxInPool = SCRAMBLE_POOL[0].length;
+        if(!withInner)
+            maxInPool = SCRAMBLE_POOL[0].length / 2;
         int rand, temp = -1;
         for(int i = 0; i < moves; i++) {
             do {
