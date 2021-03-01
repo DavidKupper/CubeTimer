@@ -7,11 +7,14 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
     private View rootPane;
     private TextView timeText;
     private TextView scrambleText;
+    private LinearLayout buttonsLayer;
+    private Button deleteView;
+    private Button dnfView;
+    private Button plus2View;
     private TableLayout frontView;
     private TableLayout upView;
     private TableLayout downView;
@@ -29,10 +36,12 @@ public class MainActivity extends AppCompatActivity {
 
     // attributes
     private long time;
+    private String currTime;
     private Timer timer;
     private TimerState timerState;
     public enum TimerState {STOPPED, WAITING, READY, RUNNING}
     private Cube cube;
+    private ArrayList<Attempt> attempts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
         rootPane = findViewById(R.id.rootPane);
         timeText = findViewById(R.id.timeText);
         scrambleText = findViewById(R.id.scrambleText);
+        buttonsLayer = findViewById(R.id.buttonsLayer);
+        deleteView = findViewById(R.id.deleteView);
+        dnfView = findViewById(R.id.dnfView);
+        plus2View = findViewById(R.id.plus2View);
         frontView = findViewById(R.id.front);
         upView = findViewById(R.id.up);
         downView = findViewById(R.id.down);
@@ -52,10 +65,12 @@ public class MainActivity extends AppCompatActivity {
         time = 0;
         timer = new Timer();
         timerState = TimerState.STOPPED;
-        int size = 3;
+        int size = 2;
         cube = new Cube(size);
         scrambleCube();
         displayCube();
+
+        attempts = new ArrayList<>();
 
     }
 
@@ -172,8 +187,17 @@ public class MainActivity extends AppCompatActivity {
                 stopTimer();
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
-                if(this.timerState == TimerState.RUNNING)
+                if(this.timerState == TimerState.WAITING) {
+                    if(attempts.isEmpty())
+                        timeText.setText(getResources().getString(R.string.hold_release));
+                    else
+                        updateTimeText(attempts.get(attempts.size()-1).getTime());
+                }
+                if(this.timerState == TimerState.RUNNING) {
+                    attempts.add(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
+                }
+
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -242,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
         backView.setVisibility(v);
 
         scrambleText.setVisibility(v);
+        buttonsLayer.setVisibility(v);
     }
 
     public static String timeToString(long time) {
