@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CubeTimer</string>
+    <string name="timeZero">00:00.000</string>
+    <string name="hold_release">Hold and release</string>
+</resources>
