@@ -17,6 +17,18 @@ public class Cube {
             for (int y = 0; y < size; y++) {
                 for (int z = 0; z < size; z++) {
                     parts[x][y][z] = new Part();
+                }
+            }
+        }
+
+        reset();
+    }
+
+    public void reset() {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                for (int z = 0; z < size; z++) {
+                    parts[x][y][z].reset();
                     if (x == 0)
                         parts[x][y][z].setSide(Side.LEFT, Side.LEFT);
                     if (x == size - 1)

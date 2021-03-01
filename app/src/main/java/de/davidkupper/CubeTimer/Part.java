@@ -2,16 +2,20 @@ package de.davidkupper.CubeTimer;
 import java.util.Arrays;
 
 public class Part {
-    private final Vector3 xVec;
-    private final Vector3 yVec;
-    private final Vector3 zVec;
+    private Vector3 xVec;
+    private Vector3 yVec;
+    private Vector3 zVec;
     private final Cube.Side[] sides;
 
     public Part() {
+        sides = new Cube.Side[6];
+        reset();
+    }
+
+    public void reset() {
         xVec = Vector3.createUnitVectorX();
         yVec = Vector3.createUnitVectorY();
         zVec = Vector3.createUnitVectorZ();
-        sides = new Cube.Side[6];
         Arrays.fill(sides, Cube.Side.NONE);
     }
 

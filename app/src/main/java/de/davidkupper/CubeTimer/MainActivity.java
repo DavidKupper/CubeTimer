@@ -55,9 +55,12 @@ public class MainActivity extends AppCompatActivity {
         int size = 3;
         cube = new Cube(size);
         scrambleCube();
+        displayCube();
+
     }
 
     private void scrambleCube() {
+        cube.reset();
         String scramble = cube.getRandomScramble();
         cube.scramble(scramble);
         scrambleText.setText(scramble);
@@ -138,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                     default:
                         throw new IllegalStateException("timerState is not valid");
                 }
+
                 break;
             case MotionEvent.ACTION_UP:
                 switch (timerState) {
@@ -167,8 +171,9 @@ public class MainActivity extends AppCompatActivity {
             case STOPPED:
                 stopTimer();
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
-                updateTimeText(time);
                 visibilityExceptTimer(true);
+                if(this.timerState == TimerState.RUNNING)
+                    scrambleCube();
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
