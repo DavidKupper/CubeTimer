@@ -17,16 +17,20 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
+// TODO implement button functions
+// TODO implement average time displays
+// TODO optimize 4x4 scramble (less w moves)
+// TODO save times permanent
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;
     private TextView timeText;
     private TextView scrambleText;
+    private Button sizeBtn;
     private LinearLayout buttonsLayer;
-    private Button deleteView;
-    private Button dnfView;
-    private Button plus2View;
+    private Button deleteBtn;
+    private Button dnfBtn;
+    private Button plus2Btn;
     private TableLayout frontView;
     private TableLayout upView;
     private TableLayout downView;
@@ -41,20 +45,23 @@ public class MainActivity extends AppCompatActivity {
     private TimerState timerState;
     public enum TimerState {STOPPED, WAITING, READY, RUNNING}
     private Cube cube;
-    private ArrayList<Attempt> attempts;
+    private ArrayList<Attempt> currentAttempts;
+    private ArrayList<Attempt>[] attemptsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // views by id
         rootPane = findViewById(R.id.rootPane);
         timeText = findViewById(R.id.timeText);
         scrambleText = findViewById(R.id.scrambleText);
+        sizeBtn = findViewById(R.id.sizeBtn);
         buttonsLayer = findViewById(R.id.buttonsLayer);
-        deleteView = findViewById(R.id.deleteView);
-        dnfView = findViewById(R.id.dnfView);
-        plus2View = findViewById(R.id.plus2View);
+        deleteBtn = findViewById(R.id.deleteBtn);
+        dnfBtn = findViewById(R.id.dnfBtn);
+        plus2Btn = findViewById(R.id.plus2Btn);
         frontView = findViewById(R.id.front);
         upView = findViewById(R.id.up);
         downView = findViewById(R.id.down);
@@ -62,15 +69,50 @@ public class MainActivity extends AppCompatActivity {
         rightView = findViewById(R.id.right);
         backView = findViewById(R.id.back);
 
+        // button on click listeners
+        sizeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sizeBtnClicked();
+            }
+        });
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteBtnClicked();
+            }
+        });
+        dnfBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dnfBtnClicked();
+            }
+        });
+        plus2Btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                plus2BtnClicked();
+            }
+        });
+
+        // vanish time control buttons
+        buttonsLayer.setVisibility(View.INVISIBLE);
+
+
+        // attributes initialisation
         time = 0;
         timer = new Timer();
         timerState = TimerState.STOPPED;
-        int size = 2;
-        cube = new Cube(size);
+        cube = new Cube(3);
         scrambleCube();
-        displayCube();
 
-        attempts = new ArrayList<>();
+        // only temporary: TODO load attempts from file
+        attemptsArray = new ArrayList[3];
+        for(ArrayList<Attempt> a : attemptsArray)
+            a = new ArrayList<>();
+        // end temporary
+        currentAttempts = attemptsArray[1]; // attempts list of 3x3
+
 
     }
 
@@ -177,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-
     private void setTimerState(TimerState state) {
         if(this.timerState == state)
             return;
@@ -188,13 +229,13 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
                 if(this.timerState == TimerState.WAITING) {
-                    if(attempts.isEmpty())
+                    if(currentAttempts.isEmpty())
                         timeText.setText(getResources().getString(R.string.hold_release));
                     else
-                        updateTimeText(attempts.get(attempts.size()-1).getTime());
+                        updateTimeText(currentAttempts.get(currentAttempts.size()-1).getTime());
                 }
                 if(this.timerState == TimerState.RUNNING) {
-                    attempts.add(new Attempt(time, scrambleText.getText().toString()));
+                    currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
 
@@ -237,6 +278,16 @@ public class MainActivity extends AppCompatActivity {
         this.timerState = state;
     }
 
+    private void setCubeSize(int size) {
+        if(timerState != TimerState.STOPPED)
+            throw new IllegalStateException("Cube size can only be set in Timer State STOPPED");
+        cube = new Cube(size); // size restriction is handled in constructor
+        scrambleCube();
+        currentAttempts = attemptsArray[size-2];
+        sizeBtn.setText(size + "x" + size);
+
+    }
+
     private void startTimer(TimerTask task) {
         time = 0;
         timer.scheduleAtFixedRate(task, 0,1);
@@ -266,10 +317,35 @@ public class MainActivity extends AppCompatActivity {
         backView.setVisibility(v);
 
         scrambleText.setVisibility(v);
+        sizeBtn.setVisibility(v);
         buttonsLayer.setVisibility(v);
     }
 
+    // button on click methods (so constructor is not packed full)
+    private void sizeBtnClicked() {
+        int size = cube.getSize();
+        if(++size > 4)              // size restriction
+            size = 2;
+        setCubeSize(size);
+    }
+
+    private void deleteBtnClicked() {
+
+    }
+
+    private void dnfBtnClicked() {
+
+    }
+
+    private void plus2BtnClicked() {
+
+    }
+
     public static String timeToString(long time) {
+        if(time == -1)
+            return "DNF";
+        else if(time < 0)
+            throw new IllegalArgumentException("time has to be > 0, or -1 for DNF");
         int minutes = (int) (time / 60000);
         int seconds = (int) ((time / 1000) - (minutes * 60));
         int millis = (int) (time - (minutes * 60000) - (seconds * 1000));

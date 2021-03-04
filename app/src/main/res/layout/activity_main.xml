@@ -37,6 +37,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeText" />
 
+    <Button
+        android:id="@+id/sizeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/sizeDefault"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/buttonsLayer"
         android:layout_width="wrap_content"
@@ -49,14 +59,14 @@
         app:layout_constraintVertical_bias="0.31">
 
         <Button
-            android:id="@+id/deleteView"
+            android:id="@+id/deleteBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/delete" />
 
         <Button
-            android:id="@+id/dnfView"
+            android:id="@+id/dnfBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
@@ -65,7 +75,7 @@
             android:text="@string/dnf" />
 
         <Button
-            android:id="@+id/plus2View"
+            android:id="@+id/plus2Btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
