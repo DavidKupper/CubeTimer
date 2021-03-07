@@ -15,6 +15,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 // TODO implement button functions
@@ -45,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private TimerState timerState;
     public enum TimerState {STOPPED, WAITING, READY, RUNNING}
     private Cube cube;
-    private ArrayList<Attempt> currentAttempts;
-    private ArrayList<Attempt>[] attemptsArray;
+    private LinkedList<Attempt> currentAttempts;
+    private LinkedList<Attempt>[] attemptsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,12 +108,11 @@ public class MainActivity extends AppCompatActivity {
         scrambleCube();
 
         // only temporary: TODO load attempts from file
-        attemptsArray = new ArrayList[3];
-        for(ArrayList<Attempt> a : attemptsArray)
-            a = new ArrayList<>();
+        attemptsArray = new LinkedList[3];
+        for(int i = 0; i < 3; i++)
+            attemptsArray[i] = new LinkedList<>();
         // end temporary
         currentAttempts = attemptsArray[1]; // attempts list of 3x3
-
 
     }
 
@@ -229,10 +229,10 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
                 if(this.timerState == TimerState.WAITING) {
-                    if(currentAttempts.isEmpty())
+                    if(currentAttempts.isEmpty())           // TODO if times are saved permanent, this will cause a bug
                         timeText.setText(getResources().getString(R.string.hold_release));
                     else
-                        updateTimeText(currentAttempts.get(currentAttempts.size()-1).getTime());
+                        updateTimeText(currentAttempts.getLast().getTime());
                 }
                 if(this.timerState == TimerState.RUNNING) {
                     currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
@@ -280,11 +280,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void setCubeSize(int size) {
         if(timerState != TimerState.STOPPED)
-            throw new IllegalStateException("Cube size can only be set in Timer State STOPPED");
+            throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
         cube = new Cube(size); // size restriction is handled in constructor
         scrambleCube();
         currentAttempts = attemptsArray[size-2];
         sizeBtn.setText(size + "x" + size);
+    }
+
+    private void deleteTime() {
+
+    }
+
+    private void setTimeDnf(boolean dnf) {
+        if(timerState != TimerState.STOPPED)
+            throw new IllegalStateException("DNF can only be set in TimerState.STOPPED");
 
     }
 
