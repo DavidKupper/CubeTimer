@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private long time;
     private Timer timer;
     private TimerState timerState;
-    public enum TimerState {STOPPED, WAITING, READY, RUNNING}
+    private TimerState fallbackState;
+    public enum TimerState {INIT, STOPPED, WAITING, READY, RUNNING}
     private Cube cube;
     private LinkedList<Attempt> currentAttempts;
     private LinkedList<Attempt>[] attemptsArray;
@@ -106,7 +107,8 @@ public class MainActivity extends AppCompatActivity {
         // attributes initialisation
         time = 0;
         timer = new Timer();
-        timerState = TimerState.STOPPED;
+        timerState = TimerState.INIT;
+        fallbackState = TimerState.INIT;
         cube = new Cube(3);
         scrambleCube();
 
@@ -192,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
                     case WAITING:
                     case READY:
                         break;
+                    case INIT:
                     case STOPPED:
                         setTimerState(TimerState.WAITING);
                         break;
@@ -205,11 +208,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case MotionEvent.ACTION_UP:
                 switch (timerState) {
+                    case INIT:
                     case STOPPED:
                     case RUNNING:
                         break;
                     case WAITING:
-                        setTimerState(TimerState.STOPPED);
+                        setTimerState(fallbackState);
                         break;
                     case READY:
                         setTimerState(TimerState.RUNNING);
@@ -227,21 +231,24 @@ public class MainActivity extends AppCompatActivity {
             return;
 
         switch (state) {
-            case STOPPED:
+            case INIT:
+                fallbackState = TimerState.INIT;
                 stopTimer();
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
-                if(this.timerState == TimerState.WAITING) {
-                    if(currentAttempts.isEmpty())           // TODO if times are saved permanent, this will cause a bug
-                        timeText.setText(getResources().getString(R.string.hold_release));
-                    else
-                        updateTimeText(currentAttempts.getLast()); // TODO make time appear according to DNF and plus2
-                }
+                buttonsLayer.setVisibility(View.INVISIBLE);
+                timeText.setText(getResources().getString(R.string.hold_release));
+            break;
+            case STOPPED:
+                fallbackState = TimerState.STOPPED;
+                stopTimer();
+                rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
+                visibilityExceptTimer(true);
                 if(this.timerState == TimerState.RUNNING) {
                     currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
-
+                updateTimeText(currentAttempts.getLast());
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -282,13 +289,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setCubeSize(int size) {
-        if(timerState != TimerState.STOPPED)
+        if(timerState != TimerState.STOPPED && timerState != TimerState.INIT)
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
         cube = new Cube(size); // size restriction is handled in constructor
         scrambleCube();
         currentAttempts = attemptsArray[size-2];
         sizeBtn.setText(size + "x" + size);
-        timeText.setText(getResources().getString(R.string.hold_release));
+        setTimerState(TimerState.INIT);
     }
 
     private void deleteTime() {
