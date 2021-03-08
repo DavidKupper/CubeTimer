@@ -19,10 +19,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
-// TODO fix bug: buttonsLayer is set to visible in INIT after WAITING --> new TierState INIT
 // TODO fix bug: currentAttempts does not save correct time
 // TODO implement delete button
-// TODO implement currCube -> only 3 instances of Cube
 // TODO implement average time displays
 // TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
@@ -50,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private TimerState fallbackState;
     public enum TimerState {INIT, STOPPED, WAITING, READY, RUNNING}
     private Cube cube;
+    private Cube[] cubes;
     private LinkedList<Attempt> currentAttempts;
     private LinkedList<Attempt>[] attemptsArray;
 
@@ -109,12 +108,17 @@ public class MainActivity extends AppCompatActivity {
         timer = new Timer();
         timerState = TimerState.INIT;
         fallbackState = TimerState.INIT;
-        cube = new Cube(3);
+
+        cubes = new Cube[3];
+        for(int i = 0; i < cubes.length; i++) {
+            cubes[i] = new Cube(i+2);
+        }
+        cube = cubes[1]; // 3x3 cube
         scrambleCube();
 
         // only temporary: TODO load attempts from file
         attemptsArray = new LinkedList[3];
-        for(int i = 0; i < 3; i++)
+        for(int i = 0; i < attemptsArray.length; i++)
             attemptsArray[i] = new LinkedList<>();
         // end temporary
         currentAttempts = attemptsArray[1]; // attempts list of 3x3
@@ -291,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
     private void setCubeSize(int size) {
         if(timerState != TimerState.STOPPED && timerState != TimerState.INIT)
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
-        cube = new Cube(size); // size restriction is handled in constructor
+        cube = cubes[size-2];
         scrambleCube();
         currentAttempts = attemptsArray[size-2];
         sizeBtn.setText(size + "x" + size);
