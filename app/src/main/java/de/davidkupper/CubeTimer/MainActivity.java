@@ -2,6 +2,7 @@ package de.davidkupper.CubeTimer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -18,7 +19,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
-// TODO implement button functions
+// TODO fix bug: buttonsLayer is set to visible in INIT after WAITING --> new TierState INIT
+// TODO fix bug: currentAttempts does not save correct time
+// TODO implement delete button
+// TODO implement currCube -> only 3 instances of Cube
 // TODO implement average time displays
 // TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
@@ -41,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
     // attributes
     private long time;
-    private String currTime;
     private Timer timer;
     private TimerState timerState;
     public enum TimerState {STOPPED, WAITING, READY, RUNNING}
@@ -232,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                     if(currentAttempts.isEmpty())           // TODO if times are saved permanent, this will cause a bug
                         timeText.setText(getResources().getString(R.string.hold_release));
                     else
-                        updateTimeText(currentAttempts.getLast().getTime());
+                        updateTimeText(currentAttempts.getLast()); // TODO make time appear according to DNF and plus2
                 }
                 if(this.timerState == TimerState.RUNNING) {
                     currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
@@ -285,15 +288,10 @@ public class MainActivity extends AppCompatActivity {
         scrambleCube();
         currentAttempts = attemptsArray[size-2];
         sizeBtn.setText(size + "x" + size);
+        timeText.setText(getResources().getString(R.string.hold_release));
     }
 
     private void deleteTime() {
-
-    }
-
-    private void setTimeDnf(boolean dnf) {
-        if(timerState != TimerState.STOPPED)
-            throw new IllegalStateException("DNF can only be set in TimerState.STOPPED");
 
     }
 
@@ -309,6 +307,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateTimeText(long time) {
         timeText.setText(timeToString(time));
+        setTimeTextDnf(false);
+    }
+
+    private void updateTimeText(Attempt attempt) {
+        timeText.setText(timeToString(attempt.getTime()));
+        setTimeTextPlus2(attempt.isPlus2());
+        setTimeTextDnf(attempt.isDnf());
+    }
+
+    private void setTimeTextDnf(boolean dnf) {
+        if(dnf) {
+            timeText.setPaintFlags(timeText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            timeText.setTextColor(getResources().getColor(R.color.red, null));
+        }
+        else {
+            timeText.setPaintFlags(timeText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            timeText.setTextColor(getResources().getColor(R.color.white, null));
+        }
+    }
+
+    private void setTimeTextPlus2(boolean plus2) {
+        String text = timeText.getText().toString();
+        String sub = text.substring(text.length()-3);
+        if(plus2) {
+            if(!sub.equals(" +2"))
+                text += " +2";
+        }
+        else {
+            if(sub.equals(" +2"))
+                text = text.substring(0, text.length() - 3);
+        }
+        timeText.setText(text);
     }
 
     private void visibilityExceptTimer(boolean visible) {
@@ -343,11 +373,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void dnfBtnClicked() {
-
+        if(timerState != TimerState.STOPPED)
+            throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
+        currentAttempts.getLast().toggleDnf();
+        setTimeTextDnf(currentAttempts.getLast().isDnf());
     }
 
     private void plus2BtnClicked() {
-
+        if(timerState != TimerState.STOPPED)
+            throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
+        currentAttempts.getLast().togglePlus2();
+        setTimeTextPlus2(currentAttempts.getLast().isPlus2());
     }
 
     public static String timeToString(long time) {

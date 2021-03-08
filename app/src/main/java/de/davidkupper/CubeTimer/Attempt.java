@@ -23,7 +23,8 @@ public class Attempt {
     }
 
     public void toggleDnf() {
-        dnf = !dnf;
+        if(!plus2)
+            dnf = !dnf;
     }
 
     public boolean isPlus2() {
@@ -31,7 +32,8 @@ public class Attempt {
     }
 
     public void togglePlus2() {
-        plus2 = !plus2;
+        if(!dnf)
+            plus2 = !plus2;
     }
 
 }
