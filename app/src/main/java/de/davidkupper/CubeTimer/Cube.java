@@ -295,7 +295,7 @@ public class Cube {
         else if(size == 3)
             return getRandomScramble(25, false);
         else
-            return getRandomScramble(35, true);
+            return getRandomScramble(20, false) + " " + getRandomScramble(15, true);
     }
     private String getRandomScramble(int moves, boolean withInner) {
         String s = "";

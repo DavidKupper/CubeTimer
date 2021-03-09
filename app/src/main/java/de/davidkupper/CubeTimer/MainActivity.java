@@ -25,7 +25,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 // TODO implement delete button
-// TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
 // TODO make show times display
 public class MainActivity extends AppCompatActivity {
