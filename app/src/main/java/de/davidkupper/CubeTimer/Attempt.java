@@ -13,7 +13,6 @@ public class Attempt implements Comparable<Attempt> {
         this.scramble = scramble;
     }
 
-
     public long getTime() {
         return time;
     }
@@ -22,7 +21,7 @@ public class Attempt implements Comparable<Attempt> {
         if(dnf)
             return -1;
         if(plus2)
-            return time + 2;
+            return time + 2000;
         return time;
     }
 
@@ -42,6 +41,11 @@ public class Attempt implements Comparable<Attempt> {
     public void togglePlus2() {
         if(!dnf)
             plus2 = !plus2;
+    }
+
+    @Override
+    public String toString() {
+        return "Time: " + time + "; Scramble: " + scramble;
     }
 
     @Override

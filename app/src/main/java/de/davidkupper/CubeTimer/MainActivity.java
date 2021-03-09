@@ -17,13 +17,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO fix bug: currentAttempts does not save correct time
 // TODO implement delete button
 // TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
@@ -265,7 +265,10 @@ public class MainActivity extends AppCompatActivity {
                     scrambleCube();
                 }
                 updateTimeText(currentAttempts.getLast());
-                Log.d("timertask","currAttempt time: " + currentAttempts.getLast().getTime());
+                for(int i = 0; i < currentAttempts.size(); i++) {
+                    Log.d("timertask", "no " + i + ": " + currentAttempts.get(i));
+                }
+                Log.d("timertask", "-----------------------------------------\n");
                 updateAvgTimesText();
                 break;
             case WAITING:
@@ -297,7 +300,6 @@ public class MainActivity extends AppCompatActivity {
                                 if(isRunning) {
                                     time = System.currentTimeMillis() - startSystemTime;
                                     updateTimeText(time);
-                                    Log.d("timertask", "time: " + time);
                                 }
                             }
                         });
@@ -407,7 +409,8 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalArgumentException("countFromLast must be greater or equal to 1");
         if(list.size() < countFromLast)
             return null;
-        return list.subList(list.size() - countFromLast, list.size());
+        list = list.subList(list.size() - countFromLast, list.size());
+        return new ArrayList(list);
     }
 
     private void setTimeTextDnf(boolean dnf) {
