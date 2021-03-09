@@ -2,7 +2,7 @@ package de.davidkupper.CubeTimer;
 
 import android.text.AutoText;
 
-public class Attempt {
+public class Attempt implements Comparable<Attempt> {
     private long time;
     private boolean dnf = false;
     private boolean plus2 = false;
@@ -15,6 +15,14 @@ public class Attempt {
 
 
     public long getTime() {
+        return time;
+    }
+
+    public long getRealTime() {
+        if(dnf)
+            return -1;
+        if(plus2)
+            return time + 2;
         return time;
     }
 
@@ -36,4 +44,13 @@ public class Attempt {
             plus2 = !plus2;
     }
 
+    @Override
+    public int compareTo(Attempt otherAttempt) {
+        if(this.time < otherAttempt.getRealTime())
+            return -1;
+        else if(this.time == otherAttempt.getRealTime())
+            return 0;
+        else
+            return 1;
+    }
 }

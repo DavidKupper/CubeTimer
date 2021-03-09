@@ -8,4 +8,8 @@
     <string name="sizeDefault">3x3</string>
     <string name="mean_default">Mean of 3:\n--:--.---\nAvg of 12:\n--:--.---</string>
     <string name="best_default">Best:\n--:--.---\nAvg of 5:\n--:--.---</string>
+    <string name="best">Best:\n</string>
+    <string name="mean3">Mean of 3:\n</string>
+    <string name="avg5">Avg of 5:\n\n</string>
+    <string name="avg12">Avg of 12:\n</string>
 </resources>

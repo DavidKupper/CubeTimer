@@ -16,10 +16,14 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+// TODO fix bug: fatal error, when updateTimeText() is invoked
 // TODO fix bug: currentAttempts does not save correct time
 // TODO implement delete button
 // TODO implement average time displays
@@ -50,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
     private Timer timer;
     private TimerState timerState;
     private TimerState fallbackState;
+
     public enum TimerState {INIT, STOPPED, WAITING, READY, RUNNING}
+
     private Cube cube;
     private Cube[] cubes;
     private LinkedList<Attempt> currentAttempts;
@@ -106,22 +112,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
         // attributes initialisation
         time = 0;
         timer = new Timer();
         setTimerState(TimerState.INIT);
 
         cubes = new Cube[3];
-        for(int i = 0; i < cubes.length; i++) {
-            cubes[i] = new Cube(i+2);
+        for (int i = 0; i < cubes.length; i++) {
+            cubes[i] = new Cube(i + 2);
         }
         cube = cubes[1]; // 3x3 cube
         scrambleCube();
 
         // only temporary: TODO load attempts from file
         attemptsArray = new LinkedList[3];
-        for(int i = 0; i < attemptsArray.length; i++)
+        for (int i = 0; i < attemptsArray.length; i++)
             attemptsArray[i] = new LinkedList<>();
         // end temporary
         currentAttempts = attemptsArray[1]; // attempts list of 3x3
@@ -149,19 +154,19 @@ public class MainActivity extends AppCompatActivity {
     private void setSideView(TableLayout view, Cube.Side[][] matrix) {
         int size = matrix.length;
         int drawId = 0;
-        if(size == 2)
+        if (size == 2)
             drawId = R.drawable.rect_rounded_big;
-        else if(size == 3)
+        else if (size == 3)
             drawId = R.drawable.rect_rounded_medium;
         else
             drawId = R.drawable.rect_rounded_small;
 
-        for(int i = 0; i < view.getChildCount(); i++) {
+        for (int i = 0; i < view.getChildCount(); i++) {
             TableRow row = (TableRow) view.getChildAt(i);
             row.removeAllViews();
         }
         ImageView[][] imageMatrix = new ImageView[size][size];
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 imageMatrix[i][j] = new ImageView(this);
                 Drawable d = getResources().getDrawable(drawId, null);
@@ -189,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
                 return getResources().getColor(R.color.defaultBack, null);
             case NONE:
                 return getResources().getColor(R.color.black, null);
-            default: throw new IllegalArgumentException("parameter side not valid");
+            default:
+                throw new IllegalArgumentException("parameter side not valid");
         }
     }
 
@@ -234,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setTimerState(TimerState state) {
-        if(this.timerState == state)
+        if (this.timerState == state)
             return;
 
         switch (state) {
@@ -248,25 +254,25 @@ public class MainActivity extends AppCompatActivity {
                 meanText.setVisibility(View.INVISIBLE);
                 timeText.setText(getResources().getString(R.string.hold_release));
                 setVerticalBias(timeText, 0.5f);
-            break;
+                break;
             case STOPPED:
                 fallbackState = TimerState.STOPPED;
                 stopTimer();
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
-                if(this.timerState == TimerState.RUNNING) {
+                if (this.timerState == TimerState.RUNNING) {
                     currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
                 updateTimeText(currentAttempts.getLast());
-                updateAvgTimes();
+                updateAvgTimesText();
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
                     @Override
                     public void run() {
                         time++;
-                        if(time >= 500) {
+                        if (time >= 500) {
                             setTimerState(TimerState.READY);
                             stopTimer();
                         }
@@ -301,11 +307,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setCubeSize(int size) {
-        if(timerState != TimerState.STOPPED && timerState != TimerState.INIT)
+        if (timerState != TimerState.STOPPED && timerState != TimerState.INIT)
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
-        cube = cubes[size-2];
+        cube = cubes[size - 2];
         scrambleCube();
-        currentAttempts = attemptsArray[size-2];
+        currentAttempts = attemptsArray[size - 2];
         sizeBtn.setText(size + "x" + size);
         setTimerState(TimerState.INIT);
     }
@@ -316,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTimer(TimerTask task) {
         time = 0;
-        timer.scheduleAtFixedRate(task, 0,1);
+        timer.scheduleAtFixedRate(task, 0, 1);
     }
 
     private void stopTimer() {
@@ -335,12 +341,69 @@ public class MainActivity extends AppCompatActivity {
         setTimeTextDnf(attempt.isDnf());
     }
 
-    private void updateAvgTimes() {
+    private void updateAvgTimesText() {
+        String best = getResources().getString(R.string.best);
+        String mean3 = getResources().getString(R.string.mean3);
+        String avg5 = getResources().getString(R.string.avg5);
+        String avg12 = getResources().getString(R.string.avg12);
 
+        int listSize = currentAttempts.size();
+        best += timeToString(getBestTime(currentAttempts));
+        mean3 += timeToString(getMean(currentAttempts, 3));
+        avg5 += timeToString(getAvg(currentAttempts, 5));
+        avg12 += timeToString(getAvg(currentAttempts, 12));
+
+        bestText.setText(best + "\n" + avg5);
+        meanText.setText(mean3 + "\n" + avg12);
+    }
+
+    private long getBestTime(List<Attempt> list) {
+        if (list.isEmpty())
+            return -1;
+        Attempt bestAttempt = list.get(0);
+        for (Attempt a : list) {
+            if (a.compareTo(bestAttempt) < 0)
+                bestAttempt = a;
+        }
+        return bestAttempt.getTime();
+    }
+
+    private long getMean(List<Attempt> list, int countFromLast) {
+        list = getSubListOfLastElements(list, countFromLast);
+        if(list == null)
+            return -1;
+        if(list.isEmpty())
+            return -1;
+        long mean = 0;
+        for (Attempt a : list)
+            mean += a.getRealTime();
+        mean /= list.size();
+        return mean;
+    }
+
+    private long getAvg(List<Attempt> list, int countFromLast) {
+        list = getSubListOfLastElements(list, countFromLast);
+        if(list == null)
+            return -1;
+        if(list.size() < 3)
+            return -1;
+        Collections.sort(list);
+        int removeCount = 1; // normally 5% of the attempts rounded up, 5 -> 1, 12 -> 1
+        list = list.subList(0, list.size()-removeCount);
+        list = list.subList(removeCount, list.size());
+        return getMean(list, list.size());
+    }
+
+    private List getSubListOfLastElements(List list, int countFromLast) {
+        if(countFromLast < 1 || countFromLast > list.size())
+            throw new IllegalArgumentException("countFromLast must be greater than or equal to 1");
+        if(list.size() < countFromLast)
+            return null;
+        return list.subList(list.size() - countFromLast, list.size());
     }
 
     private void setTimeTextDnf(boolean dnf) {
-        if(dnf) {
+        if (dnf) {
             timeText.setPaintFlags(timeText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             timeText.setTextColor(getResources().getColor(R.color.red, null));
         }
@@ -348,25 +411,27 @@ public class MainActivity extends AppCompatActivity {
             timeText.setPaintFlags(timeText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             timeText.setTextColor(getResources().getColor(R.color.white, null));
         }
+        updateAvgTimesText();
     }
 
     private void setTimeTextPlus2(boolean plus2) {
         String text = timeText.getText().toString();
-        String sub = text.substring(text.length()-3);
-        if(plus2) {
-            if(!sub.equals(" +2"))
+        String sub = text.substring(text.length() - 3);
+        if (plus2) {
+            if (!sub.equals(" +2"))
                 text += " +2";
         }
         else {
-            if(sub.equals(" +2"))
+            if (sub.equals(" +2"))
                 text = text.substring(0, text.length() - 3);
         }
         timeText.setText(text);
+        updateAvgTimesText();
     }
 
     private void visibilityExceptTimer(boolean visible) {
         int v;
-        if(visible)
+        if (visible)
             v = View.VISIBLE;
         else
             v = View.INVISIBLE;
@@ -394,7 +459,7 @@ public class MainActivity extends AppCompatActivity {
     // button on click methods (so constructor is not packed full)
     private void sizeBtnClicked() {
         int size = cube.getSize();
-        if(++size > 4)              // size restriction
+        if (++size > 4)              // size restriction
             size = 2;
         setCubeSize(size);
     }
@@ -404,23 +469,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void dnfBtnClicked() {
-        if(timerState != TimerState.STOPPED)
+        if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
         currentAttempts.getLast().toggleDnf();
         setTimeTextDnf(currentAttempts.getLast().isDnf());
     }
 
     private void plus2BtnClicked() {
-        if(timerState != TimerState.STOPPED)
+        if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
         currentAttempts.getLast().togglePlus2();
         setTimeTextPlus2(currentAttempts.getLast().isPlus2());
     }
 
     public static String timeToString(long time) {
-        if(time == -1)
+        if (time == -1)
             return "--:--.---";
-        else if(time < 0)
+        else if (time < 0)
             throw new IllegalArgumentException("time has to be > 0, or -1 for '--:--.---'");
         int minutes = (int) (time / 60000);
         int seconds = (int) ((time / 1000) - (minutes * 60));
