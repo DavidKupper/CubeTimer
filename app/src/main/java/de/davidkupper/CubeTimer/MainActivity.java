@@ -306,7 +306,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 rootPane.setBackgroundColor(getResources().getColor(R.color.red, null));
-                scrambleCube();
                 break;
         }
         this.timerState = state;
