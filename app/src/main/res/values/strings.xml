@@ -6,4 +6,6 @@
     <string name="dnf">DNF</string>
     <string name="plus2">+ 2</string>
     <string name="sizeDefault">3x3</string>
+    <string name="mean_default">Mean of 3:\n--:--.---\nAvg of 12:\n--:--.---</string>
+    <string name="best_default">Best:\n--:--.---\nAvg of 5:\n--:--.---</string>
 </resources>

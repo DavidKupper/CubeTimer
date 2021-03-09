@@ -1,6 +1,7 @@
 package de.davidkupper.CubeTimer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -24,6 +25,7 @@ import java.util.TimerTask;
 // TODO implement average time displays
 // TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
+// TODO make show times display
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private Button deleteBtn;
     private Button dnfBtn;
     private Button plus2Btn;
+    private TextView bestText;
+    private TextView meanText;
     private TableLayout frontView;
     private TableLayout upView;
     private TableLayout downView;
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         deleteBtn = findViewById(R.id.deleteBtn);
         dnfBtn = findViewById(R.id.dnfBtn);
         plus2Btn = findViewById(R.id.plus2Btn);
+        bestText = findViewById(R.id.bestText);
+        meanText = findViewById(R.id.meanText);
         frontView = findViewById(R.id.front);
         upView = findViewById(R.id.up);
         downView = findViewById(R.id.down);
@@ -99,15 +105,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // vanish time control buttons
-        buttonsLayer.setVisibility(View.INVISIBLE);
 
 
         // attributes initialisation
         time = 0;
         timer = new Timer();
-        timerState = TimerState.INIT;
-        fallbackState = TimerState.INIT;
+        setTimerState(TimerState.INIT);
 
         cubes = new Cube[3];
         for(int i = 0; i < cubes.length; i++) {
@@ -241,7 +244,10 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
                 buttonsLayer.setVisibility(View.INVISIBLE);
+                bestText.setVisibility(View.INVISIBLE);
+                meanText.setVisibility(View.INVISIBLE);
                 timeText.setText(getResources().getString(R.string.hold_release));
+                setVerticalBias(timeText, 0.5f);
             break;
             case STOPPED:
                 fallbackState = TimerState.STOPPED;
@@ -253,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
                     scrambleCube();
                 }
                 updateTimeText(currentAttempts.getLast());
+                updateAvgTimes();
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -268,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.red, null));
                 updateTimeText(0);
                 visibilityExceptTimer(false);
+                setVerticalBias(timeText, 0.45f);
                 break;
             case READY:
                 rootPane.setBackgroundColor(getResources().getColor(R.color.green, null));
@@ -327,6 +335,10 @@ public class MainActivity extends AppCompatActivity {
         setTimeTextDnf(attempt.isDnf());
     }
 
+    private void updateAvgTimes() {
+
+    }
+
     private void setTimeTextDnf(boolean dnf) {
         if(dnf) {
             timeText.setPaintFlags(timeText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -369,6 +381,14 @@ public class MainActivity extends AppCompatActivity {
         scrambleText.setVisibility(v);
         sizeBtn.setVisibility(v);
         buttonsLayer.setVisibility(v);
+        bestText.setVisibility(v);
+        meanText.setVisibility(v);
+    }
+
+    private void setVerticalBias(View view, float bias) {
+        ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) view.getLayoutParams();
+        layoutParams.verticalBias = bias;
+        timeText.setLayoutParams(layoutParams);
     }
 
     // button on click methods (so constructor is not packed full)
@@ -399,9 +419,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static String timeToString(long time) {
         if(time == -1)
-            return "DNF";
+            return "--:--.---";
         else if(time < 0)
-            throw new IllegalArgumentException("time has to be > 0, or -1 for DNF");
+            throw new IllegalArgumentException("time has to be > 0, or -1 for '--:--.---'");
         int minutes = (int) (time / 60000);
         int seconds = (int) ((time / 1000) - (minutes * 60));
         int millis = (int) (time - (minutes * 60000) - (seconds * 1000));
