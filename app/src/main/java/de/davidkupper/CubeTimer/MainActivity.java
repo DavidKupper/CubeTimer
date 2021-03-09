@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -17,16 +18,13 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO fix bug: mean and average are not calculated correctly
 // TODO fix bug: currentAttempts does not save correct time
 // TODO implement delete button
-// TODO implement average time displays
 // TODO optimize 4x4 scramble (less w moves)
 // TODO save times permanent
 // TODO make show times display
@@ -51,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
 
     // attributes
     private long time;
+    private long startSystemTime;
     private Timer timer;
+    private boolean isRunning;
     private TimerState timerState;
     private TimerState fallbackState;
 
@@ -265,13 +265,14 @@ public class MainActivity extends AppCompatActivity {
                     scrambleCube();
                 }
                 updateTimeText(currentAttempts.getLast());
+                Log.d("timertask","currAttempt time: " + currentAttempts.getLast().getTime());
                 updateAvgTimesText();
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
                     @Override
                     public void run() {
-                        time++;
+                        time = System.currentTimeMillis() - startSystemTime;
                         if (time >= 500) {
                             setTimerState(TimerState.READY);
                             stopTimer();
@@ -293,8 +294,11 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                time++;
-                                updateTimeText(time);
+                                if(isRunning) {
+                                    time = System.currentTimeMillis() - startSystemTime;
+                                    updateTimeText(time);
+                                    Log.d("timertask", "time: " + time);
+                                }
                             }
                         });
                     }
@@ -322,11 +326,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTimer(TimerTask task) {
         time = 0;
+        isRunning = true;
+        startSystemTime = System.currentTimeMillis();
         timer.scheduleAtFixedRate(task, 0, 1);
     }
 
     private void stopTimer() {
+        isRunning = false;
         timer.cancel();
+        timer.purge();
         timer = new Timer();
     }
 
