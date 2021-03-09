@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO fix bug: fatal error, when updateTimeText() is invoked
+// TODO fix bug: mean and average are not calculated correctly
 // TODO fix bug: currentAttempts does not save correct time
 // TODO implement delete button
 // TODO implement average time displays
@@ -395,8 +395,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private List getSubListOfLastElements(List list, int countFromLast) {
-        if(countFromLast < 1 || countFromLast > list.size())
-            throw new IllegalArgumentException("countFromLast must be greater than or equal to 1");
+        if(countFromLast < 1)
+            throw new IllegalArgumentException("countFromLast must be greater or equal to 1");
         if(list.size() < countFromLast)
             return null;
         return list.subList(list.size() - countFromLast, list.size());
@@ -411,7 +411,6 @@ public class MainActivity extends AppCompatActivity {
             timeText.setPaintFlags(timeText.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             timeText.setTextColor(getResources().getColor(R.color.white, null));
         }
-        updateAvgTimesText();
     }
 
     private void setTimeTextPlus2(boolean plus2) {
@@ -426,7 +425,6 @@ public class MainActivity extends AppCompatActivity {
                 text = text.substring(0, text.length() - 3);
         }
         timeText.setText(text);
-        updateAvgTimesText();
     }
 
     private void visibilityExceptTimer(boolean visible) {
@@ -473,6 +471,7 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
         currentAttempts.getLast().toggleDnf();
         setTimeTextDnf(currentAttempts.getLast().isDnf());
+        updateAvgTimesText();
     }
 
     private void plus2BtnClicked() {
@@ -480,6 +479,7 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
         currentAttempts.getLast().togglePlus2();
         setTimeTextPlus2(currentAttempts.getLast().isPlus2());
+        updateAvgTimesText();
     }
 
     public static String timeToString(long time) {
