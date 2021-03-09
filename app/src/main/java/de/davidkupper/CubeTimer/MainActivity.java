@@ -3,6 +3,7 @@ package de.davidkupper.CubeTimer;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.AlertDialog;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO implement delete button
 // TODO save times permanent
 // TODO make show times display
 public class MainActivity extends AppCompatActivity {
@@ -264,11 +264,13 @@ public class MainActivity extends AppCompatActivity {
                     scrambleCube();
                 }
                 updateTimeText(currentAttempts.getLast());
-                for(int i = 0; i < currentAttempts.size(); i++) {
-                    Log.d("timertask", "no " + i + ": " + currentAttempts.get(i));
-                }
-                Log.d("timertask", "-----------------------------------------\n");
                 updateAvgTimesText();
+
+                for(int i = 0; i < currentAttempts.size(); i++) {
+                    Log.d("attempts debug", "no " + i + ": " + currentAttempts.get(i));
+                }
+                Log.d("attempts debug", "-----------------------------------------\n");
+
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -321,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteTime() {
-
+        currentAttempts.removeLast();
     }
 
     private void startTimer(TimerTask task) {
@@ -472,7 +474,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteBtnClicked() {
-
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Time")
+                .setMessage("Do you really want to delete this time?")
+                .setIcon(android.R.drawable.ic_delete)
+                .setPositiveButton(R.string.delete, (dialog, whichButton) -> {
+                    deleteTime();
+                    setTimerState(TimerState.INIT);
+                })
+                .setNegativeButton(R.string.cancel, null).show();
     }
 
     private void dnfBtnClicked() {
