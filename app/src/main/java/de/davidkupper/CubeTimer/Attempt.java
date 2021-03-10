@@ -19,6 +19,13 @@ public class Attempt implements Comparable<Attempt>, Serializable {
         return time;
     }
 
+    public String getTimeString() {
+        String s = timeToString(time);
+        if(plus2)
+            s += " +2";
+        return s;
+    }
+
     public long getRealTime() {
         if(dnf)
             return -1;
@@ -43,6 +50,21 @@ public class Attempt implements Comparable<Attempt>, Serializable {
     public void togglePlus2() {
         if(!dnf)
             plus2 = !plus2;
+    }
+
+    public String getScramble() {
+        return scramble;
+    }
+
+    public static String timeToString(long time) {
+        if (time == -1)
+            return "--:--.---";
+        else if (time < 0)
+            throw new IllegalArgumentException("time has to be > 0, or -1 for '--:--.---'");
+        int minutes = (int) (time / 60000);
+        int seconds = (int) ((time / 1000) - (minutes * 60));
+        int millis = (int) (time - (minutes * 60000) - (seconds * 1000));
+        return String.format("%02d:%02d.%03d", minutes, seconds, millis);
     }
 
     @Override

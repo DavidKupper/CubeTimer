@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -24,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -31,14 +33,15 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO save times permanent
-// TODO make show times display
+// TODO implement delete, +2 and dnf in listView
+// TODO polish: switch order of list (in listView at least)
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;
     private TextView timeText;
     private TextView scrambleText;
     private Button sizeBtn;
+    private Button listBtn;
     private LinearLayout buttonsLayer;
     private Button deleteBtn;
     private Button dnfBtn;
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         timeText = findViewById(R.id.timeText);
         scrambleText = findViewById(R.id.scrambleText);
         sizeBtn = findViewById(R.id.sizeBtn);
+        listBtn = findViewById(R.id.listBtn);
         buttonsLayer = findViewById(R.id.buttonsLayer);
         deleteBtn = findViewById(R.id.deleteBtn);
         dnfBtn = findViewById(R.id.dnfBtn);
@@ -91,30 +95,11 @@ public class MainActivity extends AppCompatActivity {
         backView = findViewById(R.id.back);
 
         // button on click listeners
-        sizeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sizeBtnClicked();
-            }
-        });
-        deleteBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteBtnClicked();
-            }
-        });
-        dnfBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dnfBtnClicked();
-            }
-        });
-        plus2Btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                plus2BtnClicked();
-            }
-        });
+        sizeBtn.setOnClickListener(v -> onSizeBtnClicked());
+        listBtn.setOnClickListener(v -> onListBtnClicked());
+        deleteBtn.setOnClickListener(v -> onDeleteBtnClicked());
+        dnfBtn.setOnClickListener(v -> onDnfBtnClicked());
+        plus2Btn.setOnClickListener(v -> onPlus2BtnClicked());
 
 
         // attributes initialisation
@@ -470,6 +455,7 @@ public class MainActivity extends AppCompatActivity {
 
         scrambleText.setVisibility(v);
         sizeBtn.setVisibility(v);
+        listBtn.setVisibility(v);
         buttonsLayer.setVisibility(v);
         bestText.setVisibility(v);
         meanText.setVisibility(v);
@@ -482,14 +468,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // button on click methods (so constructor is not packed full)
-    private void sizeBtnClicked() {
+    private void onSizeBtnClicked() {
         int size = cube.getSize();
         if (++size > 4)              // size restriction
             size = 2;
         setCubeSize(size);
     }
 
-    private void deleteBtnClicked() {
+    private void onListBtnClicked() {
+        Intent intent = new Intent(this, ListActivity.class);
+        intent.putExtra("attempts", (Serializable) currentAttempts);
+        startActivity(intent);
+    }
+
+    private void onDeleteBtnClicked() {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Time")
                 .setMessage("Do you really want to delete this time?")
@@ -501,7 +493,7 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.cancel, null).show();
     }
 
-    private void dnfBtnClicked() {
+    private void onDnfBtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
         currentAttempts.getLast().toggleDnf();
@@ -509,7 +501,7 @@ public class MainActivity extends AppCompatActivity {
         updateAvgTimesText();
     }
 
-    private void plus2BtnClicked() {
+    private void onPlus2BtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
         currentAttempts.getLast().togglePlus2();
