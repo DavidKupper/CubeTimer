@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -37,7 +36,6 @@ import java.util.TimerTask;
 // TODO implement delete, +2 and dnf in listView
 // TODO implement drop down menu in ListActivity, to select cube size
 // TODO polish: create new class to handle Attempts as List
-// TODO polish: make delete confirmation look pretty
 // TODO polish: make setTimeTextDnf code and stuff more clean
 public class MainActivity extends AppCompatActivity {
     // views
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         // button on click listeners
         sizeBtn.setOnClickListener(v -> onSizeBtnClicked());
         listBtn.setOnClickListener(v -> onListBtnClicked());
-        deleteBtn.setOnClickListener(v -> onDeleteBtnClicked());
+        deleteBtn.setOnClickListener(v -> onDeleteBtnClicked(0));
         dnfBtn.setOnClickListener(v -> onDnfBtnClicked());
         plus2Btn.setOnClickListener(v -> onPlus2BtnClicked());
 
@@ -328,8 +326,8 @@ public class MainActivity extends AppCompatActivity {
         setTimerState(TimerState.INIT);
     }
 
-    private void deleteTime() {
-        currentAttempts.removeFirst();
+    private void deleteTime(int position) {
+        currentAttempts.remove(position);
     }
 
     private void startTimer(TimerTask task) {
@@ -479,16 +477,20 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void onDeleteBtnClicked() {
-        new AlertDialog.Builder(this)
+    protected void onDeleteBtnClicked(int position) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Delete Time")
                 .setMessage("Do you really want to delete this time?")
                 .setIcon(android.R.drawable.ic_delete)
                 .setPositiveButton(R.string.delete, (dialog, whichButton) -> {
-                    deleteTime();
+                    deleteTime(position);
                     setTimerState(TimerState.INIT);
                 })
                 .setNegativeButton(R.string.cancel, null).show();
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setBackgroundColor(getResources().getColor(R.color.transparent, null));
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setBackgroundColor(getResources().getColor(R.color.transparent, null));
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.red, null));
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.red, null));
     }
 
     private void onDnfBtnClicked() {
