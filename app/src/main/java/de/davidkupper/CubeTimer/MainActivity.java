@@ -395,8 +395,11 @@ public class MainActivity extends AppCompatActivity {
         if(list.isEmpty())
             return -1;
         long mean = 0;
-        for (Attempt a : list)
+        for (Attempt a : list) {
+            if(a.isDnf())
+                return -1;
             mean += a.getRealTime();
+        }
         mean /= list.size();
         return mean;
     }

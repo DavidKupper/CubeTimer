@@ -28,7 +28,7 @@ public class Attempt implements Comparable<Attempt>, Serializable {
 
     public long getRealTime() {
         if(dnf)
-            return -1;
+            throw new IllegalStateException("This attempt is DNF");
         if(plus2)
             return time + 2000;
         return time;
@@ -74,11 +74,21 @@ public class Attempt implements Comparable<Attempt>, Serializable {
 
     @Override
     public int compareTo(Attempt otherAttempt) {
-        if(this.time < otherAttempt.getRealTime())
-            return -1;
-        else if(this.time == otherAttempt.getRealTime())
-            return 0;
-        else
+        if(this.isDnf()) {
+            if(otherAttempt.isDnf())
+                return 0;
+            else
+                return -1;
+        }
+        else if(otherAttempt.isDnf())
             return 1;
+        else {
+            if (this.getRealTime() < otherAttempt.getRealTime())
+                return -1;
+            else if (this.getRealTime() == otherAttempt.getRealTime())
+                return 0;
+            else
+                return 1;
+        }
     }
 }
