@@ -132,7 +132,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         currentAttempts = (LinkedList<Attempt>) readList(this, currFileName);
-        updateDisplay();
+        if(timerState != TimerState.INIT)
+            updateDisplay();
     }
 
     private void scrambleCube() {
