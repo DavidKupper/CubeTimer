@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -34,9 +35,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 // TODO implement delete, +2 and dnf in listView
+// TODO implement drop down menu in ListActivity, to select cube size
 // TODO polish: create new class to handle Attempts as List
 // TODO polish: make delete confirmation look pretty
-// TODO polish: make setTimeTextDnf and stuff more clean
+// TODO polish: make setTimeTextDnf code and stuff more clean
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;
@@ -117,13 +119,13 @@ public class MainActivity extends AppCompatActivity {
         scrambleCube();
 
         currFileName = "3x3";
-        currentAttempts = (LinkedList<Attempt>) readList(currFileName); // attempts list of 3x3
+        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName); // attempts list of 3x3
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        saveList(currentAttempts, currFileName);
+        saveList(this, currentAttempts, currFileName);
     }
 
     private void scrambleCube() {
@@ -305,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
 
         // save attempts
-        saveList(currentAttempts, currFileName);
+        saveList(this, currentAttempts, currFileName);
 
         // load new cube
         int index = size - 2;
@@ -314,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
 
         // read attempts
         currFileName = size + "x" + size;
-        currentAttempts = (LinkedList<Attempt>) readList(currFileName);
+        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName);
         sizeBtn.setText(size + "x" + size);
         setTimerState(TimerState.INIT);
     }
@@ -473,8 +475,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void onListBtnClicked() {
         Intent intent = new Intent(this, ListActivity.class);
-        intent.putExtra("attempts", (Serializable) currentAttempts);
+        intent.putExtra("currFileName", currFileName);
         startActivity(intent);
+        setTimerState(TimerState.INIT);
     }
 
     private void onDeleteBtnClicked() {
@@ -516,9 +519,9 @@ public class MainActivity extends AppCompatActivity {
         return String.format("%02d:%02d.%03d", minutes, seconds, millis);
     }
 
-    private void saveList(List list, String fileName) {
+    protected static void saveList(Context context, List list, String fileName) {
         try {
-            File file = new File(getFilesDir(), fileName + ".att");
+            File file = new File(context.getFilesDir(), fileName + ".att");
             FileOutputStream fos = new FileOutputStream(file);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(list);
@@ -529,10 +532,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private List readList(String fileName) {
+    protected static List readList(Context context, String fileName) {
         List list = null;
         try {
-            File file = new File(getFilesDir(), fileName + ".att");
+            File file = new File(context.getFilesDir(), fileName + ".att");
             FileInputStream fis = new FileInputStream(file);
             ObjectInputStream ois = new ObjectInputStream(fis);
             list = (List) ois.readObject();

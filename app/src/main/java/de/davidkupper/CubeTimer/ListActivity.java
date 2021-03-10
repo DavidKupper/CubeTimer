@@ -29,15 +29,18 @@ public class ListActivity extends AppCompatActivity {
         dynamic = findViewById(R.id.dynamic);
         FloatingActionButton fab = findViewById(R.id.fab);
 
+        dynamic.setOnItemClickListener((parent, view, position, id) -> {
+            onItemClicked();
+        });
         fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
 
-        attempts = (List<Attempt>) getIntent().getSerializableExtra("attempts");
+        String currFileName = getIntent().getStringExtra("currFileName");
+        attempts = (List<Attempt>) MainActivity.readList(this, currFileName);
         CustomListAdapter adapter = new CustomListAdapter(this, attempts);
         dynamic.setAdapter(adapter);
 
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -47,5 +50,9 @@ public class ListActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onItemClicked() {
+
     }
 }
