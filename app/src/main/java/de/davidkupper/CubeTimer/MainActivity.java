@@ -18,6 +18,12 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -58,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Cube cube;
     private Cube[] cubes;
-    private LinkedList<Attempt> currentAttempts;
-    private LinkedList<Attempt>[] attemptsArray;
+    private LinkedList<Attempt> currentAttempts;        // if type LinkedList is changed, see setCubeSize() and readList()
+    private String currFileName;                        // filenames: 2x2; 3x3; 4x4
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,13 +129,14 @@ public class MainActivity extends AppCompatActivity {
         cube = cubes[1]; // 3x3 cube
         scrambleCube();
 
-        // only temporary: TODO load attempts from file
-        attemptsArray = new LinkedList[3];
-        for (int i = 0; i < attemptsArray.length; i++)
-            attemptsArray[i] = new LinkedList<>();
-        // end temporary
-        currentAttempts = attemptsArray[1]; // attempts list of 3x3
+        currFileName = "3x3";
+        currentAttempts = (LinkedList<Attempt>) readList(currFileName); // attempts list of 3x3
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveList(currentAttempts, currFileName);
     }
 
     private void scrambleCube() {
@@ -315,9 +322,18 @@ public class MainActivity extends AppCompatActivity {
     private void setCubeSize(int size) {
         if (timerState != TimerState.STOPPED && timerState != TimerState.INIT)
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
-        cube = cubes[size - 2];
+
+        // save attempts
+        saveList(currentAttempts, currFileName);
+
+        // load new cube
+        int index = size - 2;
+        cube = cubes[index];
         scrambleCube();
-        currentAttempts = attemptsArray[size - 2];
+
+        // read attempts
+        currFileName = size + "x" + size;
+        currentAttempts = (LinkedList<Attempt>) readList(currFileName);
         sizeBtn.setText(size + "x" + size);
         setTimerState(TimerState.INIT);
     }
@@ -510,5 +526,37 @@ public class MainActivity extends AppCompatActivity {
         int seconds = (int) ((time / 1000) - (minutes * 60));
         int millis = (int) (time - (minutes * 60000) - (seconds * 1000));
         return String.format("%02d:%02d.%03d", minutes, seconds, millis);
+    }
+
+    private void saveList(List list, String fileName) {
+        try {
+            File file = new File(getFilesDir(), fileName + ".att");
+            FileOutputStream fos = new FileOutputStream(file);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(list);
+            oos.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List readList(String fileName) {
+        List list = null;
+        try {
+            File file = new File(getFilesDir(), fileName + ".att");
+            FileInputStream fis = new FileInputStream(file);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            list = (List) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        if(list == null)
+            list = new LinkedList<Attempt>();
+        return list;
     }
 }

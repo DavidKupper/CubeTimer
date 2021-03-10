@@ -2,7 +2,9 @@ package de.davidkupper.CubeTimer;
 
 import android.text.AutoText;
 
-public class Attempt implements Comparable<Attempt> {
+import java.io.Serializable;
+
+public class Attempt implements Comparable<Attempt>, Serializable {
     private long time;
     private boolean dnf = false;
     private boolean plus2 = false;
