@@ -128,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
         saveList(this, currentAttempts, currFileName);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName);
+        updateDisplay();
+    }
+
     private void scrambleCube() {
         cube.reset();
         String scramble = cube.getRandomScramble();
@@ -259,8 +266,7 @@ public class MainActivity extends AppCompatActivity {
                     currentAttempts.addFirst(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
-                updateTimeText(currentAttempts.getFirst());
-                updateAvgTimesText();
+                updateDisplay();
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -339,14 +345,18 @@ public class MainActivity extends AppCompatActivity {
         timer = new Timer();
     }
 
+    private void updateDisplay() {
+        updateTimeText(currentAttempts.getFirst());
+        updateAvgTimesText();
+    }
+
     private void updateTimeText(long time) {
-        timeText.setText(timeToString(time));
+        timeText.setText(Attempt.timeToString(time));
         setTimeTextDnf(false);
     }
 
     private void updateTimeText(Attempt attempt) {
-        timeText.setText(timeToString(attempt.getTime()));
-        setTimeTextPlus2(attempt.isPlus2());
+        timeText.setText(attempt.getTimeString());
         setTimeTextDnf(attempt.isDnf());
     }
 
@@ -357,10 +367,10 @@ public class MainActivity extends AppCompatActivity {
         String avg12 = getResources().getString(R.string.avg12);
 
         int listSize = currentAttempts.size();
-        best += timeToString(getBestTime(currentAttempts));
-        mean3 += timeToString(getMean(currentAttempts, 3));
-        avg5 += timeToString(getAvg(currentAttempts, 5));
-        avg12 += timeToString(getAvg(currentAttempts, 12));
+        best += Attempt.timeToString(getBestTime(currentAttempts));
+        mean3 += Attempt.timeToString(getMean(currentAttempts, 3));
+        avg5 += Attempt.timeToString(getAvg(currentAttempts, 5));
+        avg12 += Attempt.timeToString(getAvg(currentAttempts, 12));
 
         bestText.setText(best + "\n" + avg5);
         meanText.setText(mean3 + "\n" + avg12);
@@ -423,20 +433,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setTimeTextPlus2(boolean plus2) {
-        String text = timeText.getText().toString();
-        String sub = text.substring(text.length() - 3);
-        if (plus2) {
-            if (!sub.equals(" +2"))
-                text += " +2";
-        }
-        else {
-            if (sub.equals(" +2"))
-                text = text.substring(0, text.length() - 3);
-        }
-        timeText.setText(text);
-    }
-
     private void visibilityExceptTimer(boolean visible) {
         int v;
         if (visible)
@@ -477,7 +473,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ListActivity.class);
         intent.putExtra("currFileName", currFileName);
         startActivity(intent);
-        setTimerState(TimerState.INIT);
     }
 
     private void onDeleteBtnClicked() {
@@ -504,19 +499,7 @@ public class MainActivity extends AppCompatActivity {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
         currentAttempts.getFirst().togglePlus2();
-        setTimeTextPlus2(currentAttempts.getFirst().isPlus2());
-        updateAvgTimesText();
-    }
-
-    public static String timeToString(long time) {
-        if (time == -1)
-            return "--:--.---";
-        else if (time < 0)
-            throw new IllegalArgumentException("time has to be > 0, or -1 for '--:--.---'");
-        int minutes = (int) (time / 60000);
-        int seconds = (int) ((time / 1000) - (minutes * 60));
-        int millis = (int) (time - (minutes * 60000) - (seconds * 1000));
-        return String.format("%02d:%02d.%03d", minutes, seconds, millis);
+        updateDisplay();
     }
 
     protected static void saveList(Context context, List list, String fileName) {
