@@ -34,7 +34,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 // TODO implement delete, +2 and dnf in listView
-// TODO polish: switch order of list (in listView at least)
+// TODO polish: create new class to handle Attempts as List
+// TODO polish: make delete confirmation look pretty
+// TODO polish: make setTimeTextDnf and stuff more clean
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;
@@ -252,17 +254,11 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
                 if (this.timerState == TimerState.RUNNING) {
-                    currentAttempts.add(new Attempt(time, scrambleText.getText().toString()));
+                    currentAttempts.addFirst(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
-                updateTimeText(currentAttempts.getLast());
+                updateTimeText(currentAttempts.getFirst());
                 updateAvgTimesText();
-
-                for(int i = 0; i < currentAttempts.size(); i++) {
-                    Log.d("attempts debug", "no " + i + ": " + currentAttempts.get(i));
-                }
-                Log.d("attempts debug", "-----------------------------------------\n");
-
                 break;
             case WAITING:
                 startTimer(new TimerTask() {
@@ -324,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteTime() {
-        currentAttempts.removeLast();
+        currentAttempts.removeFirst();
     }
 
     private void startTimer(TimerTask task) {
@@ -379,8 +375,8 @@ public class MainActivity extends AppCompatActivity {
         return bestAttempt.getTime();
     }
 
-    private long getMean(List<Attempt> list, int countFromLast) {
-        list = getSubListOfLastElements(list, countFromLast);
+    private long getMean(List<Attempt> list, int countFromFirst) {
+        list = getSubListOfLastElements(list, countFromFirst);
         if(list == null)
             return -1;
         if(list.isEmpty())
@@ -392,8 +388,8 @@ public class MainActivity extends AppCompatActivity {
         return mean;
     }
 
-    private long getAvg(List<Attempt> list, int countFromLast) {
-        list = getSubListOfLastElements(list, countFromLast);
+    private long getAvg(List<Attempt> list, int countFromFirst) {
+        list = getSubListOfLastElements(list, countFromFirst);
         if(list == null)
             return -1;
         if(list.size() < 3)
@@ -405,12 +401,12 @@ public class MainActivity extends AppCompatActivity {
         return getMean(list, list.size());
     }
 
-    private List getSubListOfLastElements(List list, int countFromLast) {
-        if(countFromLast < 1)
+    private List getSubListOfLastElements(List list, int countFromFirst) {
+        if(countFromFirst < 1)
             throw new IllegalArgumentException("countFromLast must be greater or equal to 1");
-        if(list.size() < countFromLast)
+        if(list.size() < countFromFirst)
             return null;
-        list = list.subList(list.size() - countFromLast, list.size());
+        list = list.subList(0, countFromFirst);
         return new ArrayList(list);
     }
 
@@ -496,16 +492,16 @@ public class MainActivity extends AppCompatActivity {
     private void onDnfBtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
-        currentAttempts.getLast().toggleDnf();
-        setTimeTextDnf(currentAttempts.getLast().isDnf());
+        currentAttempts.getFirst().toggleDnf();
+        setTimeTextDnf(currentAttempts.getFirst().isDnf());
         updateAvgTimesText();
     }
 
     private void onPlus2BtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
-        currentAttempts.getLast().togglePlus2();
-        setTimeTextPlus2(currentAttempts.getLast().isPlus2());
+        currentAttempts.getFirst().togglePlus2();
+        setTimeTextPlus2(currentAttempts.getFirst().isPlus2());
         updateAvgTimesText();
     }
 
