@@ -26,9 +26,13 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+
+        currFileName = getIntent().getStringExtra("currFileName");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(currFileName);
 
         dynamic = findViewById(R.id.dynamic);
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -39,7 +43,6 @@ public class ListActivity extends AppCompatActivity {
         fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
 
-        currFileName = getIntent().getStringExtra("currFileName");
         attempts = (List<Attempt>) MainActivity.readList(this, currFileName);
         adapter = new CustomListAdapter(this, attempts);
         dynamic.setAdapter(adapter);
