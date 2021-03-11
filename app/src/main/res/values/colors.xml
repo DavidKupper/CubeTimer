@@ -11,6 +11,7 @@
     <color name="green">#3BC31D</color>
     <color name="red">#FF3B3B</color>
     <color name="orange">#FF9800</color>
+    <color name="blue">#2F1AFF</color>
     <!-- default colors of cube sides -->
     <color name="defaultUp">#FFFFFF</color>
     <color name="defaultDown">#E6FF00</color>

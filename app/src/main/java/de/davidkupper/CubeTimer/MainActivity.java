@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO implement delete, +2 and dnf in listView
 // TODO implement drop down menu in ListActivity, to select cube size
 // TODO polish: create new class to handle Attempts as List
 // TODO polish: make setTimeTextDnf code and stuff more clean
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Cube cube;
     private Cube[] cubes;
-    private LinkedList<Attempt> currentAttempts;        // if type LinkedList is changed, see setCubeSize() and readList()
+    private LinkedList<Attempt> attempts;        // if type LinkedList is changed, see setCubeSize() and readList()
     private String currFileName;                        // filenames: 2x2; 3x3; 4x4
 
     @Override
@@ -117,19 +115,19 @@ public class MainActivity extends AppCompatActivity {
         scrambleCube();
 
         currFileName = "3x3";
-        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName); // attempts list of 3x3
+        attempts = (LinkedList<Attempt>) readList(this, currFileName); // attempts list of 3x3
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        saveList(this, currentAttempts, currFileName);
+        saveList(this, attempts, currFileName);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName);
+        attempts = (LinkedList<Attempt>) readList(this, currFileName);
         if(timerState != TimerState.INIT)
             updateDisplay();
     }
@@ -262,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
                 rootPane.setBackgroundColor(getResources().getColor(R.color.orange, null));
                 visibilityExceptTimer(true);
                 if (this.timerState == TimerState.RUNNING) {
-                    currentAttempts.addFirst(new Attempt(time, scrambleText.getText().toString()));
+                    attempts.addFirst(new Attempt(time, scrambleText.getText().toString()));
                     scrambleCube();
                 }
                 updateDisplay();
@@ -312,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
             throw new IllegalStateException("Cube size can only be set in TimerState.STOPPED");
 
         // save attempts
-        saveList(this, currentAttempts, currFileName);
+        saveList(this, attempts, currFileName);
 
         // load new cube
         int index = size - 2;
@@ -321,13 +319,13 @@ public class MainActivity extends AppCompatActivity {
 
         // read attempts
         currFileName = size + "x" + size;
-        currentAttempts = (LinkedList<Attempt>) readList(this, currFileName);
+        attempts = (LinkedList<Attempt>) readList(this, currFileName);
         sizeBtn.setText(size + "x" + size);
         setTimerState(TimerState.INIT);
     }
 
-    private void deleteTime(int position) {
-        currentAttempts.remove(position);
+    private void deleteTime() {
+        attempts.remove();
     }
 
     private void startTimer(TimerTask task) {
@@ -345,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDisplay() {
-        updateTimeText(currentAttempts.getFirst());
+        updateTimeText(attempts.getFirst());
         updateAvgTimesText();
     }
 
@@ -365,11 +363,11 @@ public class MainActivity extends AppCompatActivity {
         String avg5 = getResources().getString(R.string.avg5);
         String avg12 = getResources().getString(R.string.avg12);
 
-        int listSize = currentAttempts.size();
-        best += Attempt.timeToString(getBestTime(currentAttempts));
-        mean3 += Attempt.timeToString(getMean(currentAttempts, 3));
-        avg5 += Attempt.timeToString(getAvg(currentAttempts, 5));
-        avg12 += Attempt.timeToString(getAvg(currentAttempts, 12));
+        int listSize = attempts.size();
+        best += Attempt.timeToString(getBestTime(attempts));
+        mean3 += Attempt.timeToString(getMean(attempts, 3));
+        avg5 += Attempt.timeToString(getAvg(attempts, 5));
+        avg12 += Attempt.timeToString(getAvg(attempts, 12));
 
         bestText.setText(best + "\n" + avg5);
         meanText.setText(mean3 + "\n" + avg12);
@@ -483,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("Do you really want to delete this time?")
                 .setIcon(android.R.drawable.ic_delete)
                 .setPositiveButton(R.string.delete, (dialog, whichButton) -> {
-                    deleteTime(position);
+                    deleteTime();
                     setTimerState(TimerState.INIT);
                 })
                 .setNegativeButton(R.string.cancel, null).show();
@@ -496,15 +494,15 @@ public class MainActivity extends AppCompatActivity {
     private void onDnfBtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set DNF in TimerState.STOPPED");
-        currentAttempts.getFirst().toggleDnf();
-        setTimeTextDnf(currentAttempts.getFirst().isDnf());
+        attempts.getFirst().toggleDnf();
+        setTimeTextDnf(attempts.getFirst().isDnf());
         updateAvgTimesText();
     }
 
     private void onPlus2BtnClicked() {
         if (timerState != TimerState.STOPPED)
             throw new IllegalStateException("Time can only be set +2 in TimerState.STOPPED");
-        currentAttempts.getFirst().togglePlus2();
+        attempts.getFirst().togglePlus2();
         updateDisplay();
     }
 

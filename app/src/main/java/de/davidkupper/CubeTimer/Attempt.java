@@ -1,6 +1,7 @@
 package de.davidkupper.CubeTimer;
 
 import android.text.AutoText;
+import android.widget.Toast;
 
 import java.io.Serializable;
 
