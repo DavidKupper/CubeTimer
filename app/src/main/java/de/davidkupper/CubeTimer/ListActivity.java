@@ -9,7 +9,9 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -40,8 +42,9 @@ public class ListActivity extends AppCompatActivity {
         dynamic.setOnItemClickListener((parent, view, position, id) -> {
             onItemClicked(position);
         });
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
+        fab.setOnClickListener(view -> {
+            addTimeDialog();
+        });
 
         attempts = (List<Attempt>) MainActivity.readList(this, currFileName);
         adapter = new CustomListAdapter(this, attempts);
@@ -66,13 +69,13 @@ public class ListActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_baseline_create_24)
                 .setPositiveButton(R.string.plus2, (dialog, whichButton) -> {
                     if(attempts.get(position).isDnf())
-                        Toast.makeText(this, "Already DNF", Toast.LENGTH_SHORT).show();
+                        toast("Already DNF");
                     attempts.get(position).togglePlus2();
                     updateData();
                 })
                 .setNegativeButton(R.string.dnf, (dialog, whichButton) -> {
                     if(attempts.get(position).isPlus2())
-                        Toast.makeText(this, "Already +2", Toast.LENGTH_SHORT).show();
+                        toast("Already +2");
                     attempts.get(position).toggleDnf();
                     updateData();
                 })
@@ -109,4 +112,53 @@ public class ListActivity extends AppCompatActivity {
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.red, null));
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.red, null));
     }
+
+    private void addTimeDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Add Time")
+                .setView(R.layout.add_time)
+                .setMessage("Enter time to add: ")
+                .setIcon(R.drawable.ic_baseline_add_alarm_24)
+                .setPositiveButton(R.string.add, (dialog, whichButton) -> {
+                    EditText editText = findViewById(R.id.add_time_edit);
+                    //EditText scramble = findViewById(R.id.add_time_scramble_edit);
+                    addTime(editText.getText().toString(), "");//scramble.getText().toString());
+                })
+                .setNegativeButton(R.string.cancel, null).show();
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setBackgroundColor(getResources().getColor(R.color.transparent, null));
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setBackgroundColor(getResources().getColor(R.color.transparent, null));
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue, null));
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.red, null));
+    }
+
+    // TODO fix this shit
+    private void addTime(String enteredText, String scramble) {
+        int doublePointIdx = enteredText.indexOf(":");
+        int pointIdx = enteredText.indexOf(".");
+        if(pointIdx == -1 || doublePointIdx == -1 || doublePointIdx > pointIdx) {
+            toast("Time not valid!");
+            Log.d("addTimer", "-1");
+        }
+        else {
+            try {
+                int min = Integer.parseInt(enteredText.substring(0, doublePointIdx));
+                int sec = Integer.parseInt(enteredText.substring(doublePointIdx + 1, pointIdx));
+                int millis = Integer.parseInt(enteredText.substring(pointIdx + 1));
+                long time = millis + sec * 1000 + min * 60000;
+                attempts.add(new Attempt(time, scramble));
+                updateData();
+                Log.d("addTime", "success");
+            }
+            catch (NumberFormatException e) {
+                e.printStackTrace();
+                Log.d("addTime", "invalid");
+                toast("Time not valid!");
+            }
+        }
+    }
+
+    private void toast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
 }
