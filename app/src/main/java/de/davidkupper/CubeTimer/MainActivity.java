@@ -33,8 +33,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 // TODO implement drop down menu in ListActivity, to select cube size
-// TODO polish: create new class to handle Attempts as List
-// TODO polish: make setTimeTextDnf code and stuff more clean
 public class MainActivity extends AppCompatActivity {
     // views
     private View rootPane;

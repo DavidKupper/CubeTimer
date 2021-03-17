@@ -27,7 +27,8 @@ public class CustomListAdapter extends ArrayAdapter<Attempt> {
         View rowView = inflater.inflate(R.layout.list_item, parent, false);
         final TextView firstLine = rowView.findViewById(R.id.firstLine);
         final TextView secondLine = rowView.findViewById(R.id.secondLine);
-        firstLine.setText("" + values.get(position).getTimeString());
+        int number = values.size() - position;
+        firstLine.setText(number + ". " + values.get(position).getTimeString());
         setTextViewStrikeThrough(firstLine, values.get(position).isDnf());
         secondLine.setText(values.get(position).getScramble());
         return rowView;
