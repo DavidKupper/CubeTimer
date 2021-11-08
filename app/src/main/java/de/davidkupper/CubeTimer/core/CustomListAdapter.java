@@ -1,4 +1,4 @@
-package de.davidkupper.CubeTimer;
+package de.davidkupper.CubeTimer.core;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.List;
+
+import de.davidkupper.CubeTimer.R;
 
 public class CustomListAdapter extends ArrayAdapter<Attempt> {
     private final Context context;

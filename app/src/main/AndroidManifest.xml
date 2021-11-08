@@ -10,10 +10,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CubeTimer">
         <activity
-            android:name=".ListActivity"
+            android:name=".core.ListActivity"
             android:label="@string/title_activity_list"
             android:theme="@style/Theme.CubeTimer.NoActionBar"></activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".core.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

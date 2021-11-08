@@ -1,4 +1,4 @@
-package de.davidkupper.CubeTimer;
+package de.davidkupper.CubeTimer.cubemodel;
 
 public class Cube {
     private final int size;

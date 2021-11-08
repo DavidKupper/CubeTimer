@@ -1,4 +1,4 @@
-package de.davidkupper.CubeTimer;
+package de.davidkupper.CubeTimer.core;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -31,6 +31,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import de.davidkupper.CubeTimer.R;
+import de.davidkupper.CubeTimer.cubemodel.Cube;
 
 // TODO implement drop down menu in ListActivity, to select cube size
 public class MainActivity extends AppCompatActivity {

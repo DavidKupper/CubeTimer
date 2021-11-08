@@ -1,4 +1,4 @@
-package de.davidkupper.CubeTimer;
+package de.davidkupper.CubeTimer.cubemodel;
 import java.util.Arrays;
 
 public class Part {

@@ -1,10 +1,9 @@
-package de.davidkupper.CubeTimer;
+package de.davidkupper.CubeTimer.core;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,6 +15,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.List;
+
+import de.davidkupper.CubeTimer.R;
 
 public class ListActivity extends AppCompatActivity {
 
